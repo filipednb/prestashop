@@ -24,21 +24,31 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-{if $version eq false}
+{if $version eq true}
 <div class="row">
 	<div class="col-xs-12 col-md-6">
 		<p class="payment_module">
-		    <a style="background: url({$image|escape:'htmlall':'UTF-8'}) 1% 50% no-repeat;" href="{$action_url|escape:'htmlall':'UTF-8'}" title="{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}">
-			{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}
+		    {if $showLink}
+		    <a href="{$action_url|escape:'htmlall':'UTF-8'}" title="{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}">
+		    {/if}
+				<img src="{$image|escape:'htmlall':'UTF-8'}" alt="{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}" />
+				{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}
+		    {if $showLink}
 		    </a>
+		    {/if}
 		</p> 
 	</div>
 </div>
 {else}
 <p class="payment_module">
+    {if $showLink}
     <a href="{$action_url|escape:'htmlall':'UTF-8'}" title="{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}">
+    {/if}
         <img src="{$image|escape:'htmlall':'UTF-8'}" alt="{l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}" />
             {l s='Pague com PagSeguro e parcele em até 18 vezes' mod='pagseguro'}
+    {if $showLink}
     </a>
+    {/if}
+    
 </p> 
 {/if}

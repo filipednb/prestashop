@@ -59,6 +59,11 @@ class PagSeguroPaymentModuleFrontController extends ModuleFrontController
         $url = "index.php?fc=module&module=pagseguro&controller=error";
         $this->context->smarty->assign('errurl', $url);
         
-        $this->setTemplate('payment_execution.tpl');
+        if (version_compare(_PS_VERSION_, '1.7.0.0', '<')) {
+            $this->setTemplate('payment_execution.tpl');
+        } else {
+            $this->setTemplate(_PS_MODULE_DIR_ . 'pagseguro/views/templates/front/payment_execution.tpl');
+            
+        }
     }
 }

@@ -24,6 +24,8 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+
 require_once dirname(__FILE__).'/Loader.php';
 
 if (!defined('_PS_VERSION_'))
@@ -60,7 +62,7 @@ class PagSeguro extends PaymentModule {
     public function __construct() {
         $this->name = 'pagseguro';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.0';
+        $this->version = '2.3.0';
         $this->author = 'PagSeguro Internet LTDA.';
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
@@ -142,7 +144,6 @@ class PagSeguro extends PaymentModule {
             return false;
         }
         if (!parent::install() or
-            ! $this->registerHook('payment') or
             ! $this->registerHook('paymentReturn') or
             ! $this->registerHook('header') or
             ! Configuration::updateValue('PAGSEGURO_EMAIL', '') or
@@ -167,6 +168,14 @@ class PagSeguro extends PaymentModule {
             ! Configuration::updateValue('PAGSEGURO_DISCOUNT_BALANCE_VL', "00.00")
         ) {
             return false;
+        }
+        if (version_compare(_PS_VERSION_, '1.7.0.0', '<')) {
+            if(! $this->registerHook('payment'))
+                return false;
+        } 
+        else {
+            if(! $this->registerHook('paymentOptions'))
+                return false; 
         }
         return true;
     }
@@ -268,7 +277,30 @@ class PagSeguro extends PaymentModule {
 
         $this->addToView('version', $bootstrap);
 
-        return $this->display(__PS_BASE_URI__ . 'modules/pagseguro', '/views/templates/hook/payment.tpl');
+        return $this->_display(__PS_BASE_URI__ . 'modules/pagseguro', '/views/templates/hook/payment.tpl');
+    }
+
+    /**
+     * Prestashop 1.7 way to hook payment modules in the new onepage checkout
+     */
+    public function hookPaymentOptions($params) {
+
+        if (!$this->active) {
+            return;
+        }
+
+        $this->modulo->paymentConfiguration($params);
+        $bootstrap = true;
+
+        $this->addToView('version', $bootstrap);
+
+        $newOption = new PaymentOption();
+        $newOption->setModuleName($this->name)
+                ->setCallToActionText($this->trans('Pague com o PagSeguro', array(), 'Modules.PagSeguro.Admin'))
+                ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
+                ->setAdditionalInformation($this->_display('', 'module:pagseguro/views/templates/hook/payment.tpl'));
+
+        return [$newOption];
     }
 
     /**
@@ -1300,5 +1332,17 @@ class PagSeguro extends PaymentModule {
     private function getPrestaShopEnvironment()
     {
         return Configuration::get('PAGSEGURO_ENVIRONMENT');
+    }
+
+    /**
+     * Handle display method to old versions compatibility
+     */
+    private function _display($modulePath, $templatePath) {
+        if (version_compare(_PS_VERSION_, '1.7.0.0', "<")) { 
+            return $this->display($modulePath, $templatePath);
+        } 
+        else { // new Prestashop 1.7 Smarty way
+            return $this->fetch($templatePath);
+        }
     }
 }
